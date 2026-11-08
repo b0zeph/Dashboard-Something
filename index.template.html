@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Gilded Ace — Luck, Location, or a Leak?</title>
+<link href="https://api.fontshare.com/v2/css?f[]=boska@400,500,700&f[]=switzer@300,400,500,600,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0b110e; --surface:#111a15; --surface-2:#152019; --surface-3:#1a271f;
+  --border:#263630; --border-soft:#1d2b25;
+  --text:#ece9dd; --muted:#9db0a4; --faint:#64756c;
+  --gold:#d9a94e; --gold-bright:#f2cd85; --gold-dim:#8a6c30;
+  --red:#d96a5a; --red-soft:#3a2420;
+  --green:#7fb98b; --green-soft:#1e2f24;
+  --blue:#6fa8c9; --blue-soft:#1b2a33;
+  --plum:#b48ecb; --plum-soft:#2c2433;
+  --sand:#c9b18a; --sand-soft:#332d22;
+  --teal:#5cb8ae;
+  --font-display:'Boska',Georgia,serif;
+  --font-body:'Switzer','Helvetica Neue',sans-serif;
+  --text-xs:clamp(0.75rem,0.7rem+0.25vw,0.875rem);
+  --text-sm:clamp(0.875rem,0.8rem+0.35vw,1rem);
+  --text-base:clamp(1rem,0.95rem+0.25vw,1.125rem);
+  --text-lg:clamp(1.125rem,1rem+0.75vw,1.5rem);
+  --text-xl:clamp(1.5rem,1.2rem+1.25vw,2.25rem);
+  --r-sm:0.375rem; --r-md:0.5rem; --r-lg:0.75rem; --r-full:999px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth;scroll-padding-top:var(--header-height,5rem)}
+body{min-height:100dvh;line-height:1.55;font-family:var(--font-body);font-size:var(--text-base);color:var(--text);background:var(--bg)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(1200px 500px at 15% -5%,rgba(217,169,78,0.06),transparent 60%),
+             radial-gradient(900px 500px at 90% 0%,rgba(92,184,174,0.05),transparent 55%);}
+h1,h2,h3,h4{line-height:1.15;text-wrap:balance}
+p,li,figcaption{text-wrap:pretty;max-width:75ch}
+a{color:var(--gold-bright);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
+table{border-collapse:collapse;width:100%}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:var(--r-sm)}
+.num{font-variant-numeric:tabular-nums lining-nums}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(11,17,14,0.92);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border-soft)}
+.topbar-inner{max-width:1440px;margin:0 auto;padding:0.65rem 1.5rem;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:0.8rem 1.2rem}
+.brand{display:flex;align-items:baseline;gap:0.6rem;white-space:nowrap}
+.brand .ace{font-family:var(--font-display);font-size:var(--text-lg);color:var(--gold);font-weight:700;letter-spacing:0.02em}
+.brand .sub{font-size:var(--text-xs);color:var(--muted);letter-spacing:0.14em;text-transform:uppercase}
+.nav{display:flex;gap:0.15rem;flex-wrap:nowrap;min-width:0;overflow-x:auto;scrollbar-width:thin;font-size:var(--text-xs)}
+.nav a{white-space:nowrap;flex:none}
+.nav a{color:var(--muted);padding:0.3rem 0.55rem;border-radius:var(--r-sm)}
+.nav a:hover{color:var(--gold-bright);background:var(--surface-2);text-decoration:none}
+.nav a[aria-current="page"]{color:var(--gold-bright);background:var(--surface-2)}
+.filters{display:flex;align-items:center;justify-content:flex-end;gap:0.5rem;flex-wrap:nowrap;white-space:nowrap}
+.filters label{font-size:var(--text-xs);color:var(--muted)}
+select{background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:0.3rem 0.5rem;font-size:var(--text-xs);font-family:var(--font-body)}
+
+/* ---------- layout ---------- */
+main{max-width:1240px;margin:0 auto;padding:0 1.5rem 4rem;position:relative;z-index:1}
+section{margin-top:2.25rem;scroll-margin-top:var(--header-height,5rem)}
+main>section{display:none}
+.page-section main>section.active{display:block}
+.page-home main>section{display:none}
+.page-section .hero{display:none}
+.page-home .hero{display:block}
+.sec-head{display:flex;align-items:baseline;gap:0.9rem;margin-bottom:0.4rem}
+.sec-num{font-family:var(--font-display);font-size:var(--text-sm);color:var(--gold);letter-spacing:0.08em}
+h2{font-family:var(--font-display);font-size:var(--text-xl);font-weight:500;color:var(--text)}
+.sec-sub{color:var(--muted);font-size:var(--text-sm);line-height:1.7;max-width:68ch;margin-bottom:1.25rem}
+.sec-sub + .sec-sub{margin-top:-0.8rem}
+
+/* hero */
+.hero{padding:3.2rem 0 0.5rem}
+.hero .kicker{font-size:var(--text-xs);letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:0.6rem}
+.hero h1{font-family:var(--font-display);font-weight:500;font-size:clamp(2.2rem,1.2rem+4.5vw,4.2rem);max-width:20ch}
+.hero h1 em{font-style:italic;color:var(--gold-bright)}
+.hero .lede{color:var(--muted);font-size:var(--text-lg);margin-top:1rem;max-width:68ch}
+.hero .lede strong{color:var(--text);font-weight:600}
+.verdict-strip{display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1.5rem}
+.vpill{display:flex;align-items:center;gap:0.5rem;border:1px solid var(--border);border-radius:var(--r-full);
+  padding:0.45rem 0.95rem;font-size:var(--text-sm);background:var(--surface)}
+.vpill b{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700}
+.vpill .dot{width:0.55rem;height:0.55rem;border-radius:50%;flex:none}
+
+/* KPI cards */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:0.9rem;margin-top:1.75rem}
+.kpi{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--r-lg);padding:1rem 1.1rem;
+  display:flex;flex-direction:column;gap:0.2rem;content-visibility:auto;contain-intrinsic-size:0 130px}
+.kpi .v{font-family:var(--font-display);font-size:var(--text-xl);font-weight:700;color:var(--gold-bright)}
+.kpi .v.bad{color:var(--red)} .kpi .v.good{color:var(--green)}
+.kpi .l{font-size:var(--text-xs);color:var(--muted);line-height:1.4}
+.kpi .d{font-size:var(--text-xs);color:var(--faint)}
+
+/* cards & grids */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(480px,100%),1fr));gap:1.1rem}
+.card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--r-lg);padding:1.25rem 1.35rem}
+.card h3{font-size:var(--text-base);font-weight:600;margin-bottom:0.25rem}
+.card .note{font-size:var(--text-xs);color:var(--muted);margin-bottom:0.75rem;max-width:70ch}
+.chart-box{position:relative;width:100%}
+.legend-chips{display:flex;gap:0.4rem;flex-wrap:wrap;margin:0.35rem 0 0.6rem}
+.chip{font-size:var(--text-xs);border:1px solid var(--border);border-radius:var(--r-full);padding:0.18rem 0.6rem;
+  color:var(--muted);background:var(--surface-2);display:inline-flex;align-items:center;gap:0.4rem}
+.chip .dot{width:0.5rem;height:0.5rem;border-radius:50%}
+.chip[aria-pressed="true"]{color:var(--text);border-color:var(--gold-dim);background:var(--surface-3)}
+.chip:hover{border-color:var(--gold-dim)}
+
+/* verdict table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border-soft);border-radius:var(--r-lg);background:var(--surface)}
+table.vt{font-size:var(--text-sm);min-width:1040px}
+table.vt thead th{position:sticky;top:0;background:var(--surface-2);color:var(--muted);font-weight:500;
+  font-size:var(--text-xs);text-align:left;padding:0.6rem 0.75rem;border-bottom:1px solid var(--border);z-index:2;white-space:nowrap}
+table.vt tbody td{padding:0.55rem 0.75rem;border-bottom:1px solid var(--border-soft);white-space:nowrap;vertical-align:middle}
+table.vt tbody tr{cursor:pointer;transition:background 0.15s}
+table.vt tbody tr:hover{background:var(--surface-2)}
+table.vt tbody tr.sel{background:var(--surface-3);box-shadow:inset 3px 0 0 var(--gold)}
+.vchip{display:inline-block;font-size:var(--text-xs);font-weight:600;padding:0.16rem 0.6rem;border-radius:var(--r-full);letter-spacing:0.03em;white-space:nowrap}
+.vc-leak{background:var(--red-soft);color:var(--red)}
+.vc-loc{background:var(--blue-soft);color:var(--blue)}
+.vc-game{background:var(--plum-soft);color:var(--plum)}
+.vc-new{background:var(--green-soft);color:var(--green)}
+.vc-ret{background:var(--sand-soft);color:var(--sand)}
+.rank{font-family:var(--font-display);color:var(--faint);font-weight:700}
+td.mach{font-weight:600;color:var(--gold-bright)}
+td.pos{color:var(--green)} td.neg{color:var(--red)}
+.tbl-foot{font-size:var(--text-xs);color:var(--faint);padding:0.6rem 0.85rem}
+
+/* drawer */
+.drawer-veil{position:fixed;inset:0;background:rgba(5,8,6,0.6);z-index:90;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer-veil.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(680px,94vw);background:var(--surface);border-left:1px solid var(--border);
+  z-index:95;transform:translateX(102%);transition:transform .28s cubic-bezier(0.16,1,0.3,1);overflow-y:auto;overscroll-behavior:contain;padding:1.6rem 1.7rem 3rem}
+.drawer.open{transform:none}
+.drawer .close{position:absolute;top:1rem;right:1rem;color:var(--muted);font-size:var(--text-lg);padding:0.3rem 0.6rem;border-radius:var(--r-sm)}
+.drawer .close:hover{color:var(--text);background:var(--surface-2)}
+.drawer h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:500;margin-bottom:0.2rem}
+.drawer .meta{font-size:var(--text-xs);color:var(--muted);margin-bottom:1rem}
+.drawer h4{font-size:var(--text-sm);font-weight:600;color:var(--gold);margin:1.4rem 0 0.5rem;letter-spacing:0.04em}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1.2rem;font-size:var(--text-sm)}
+.dgrid div span{display:block;font-size:var(--text-xs);color:var(--faint)}
+.dgrid div b{font-weight:600}
+
+/* waterfall */
+.wf{display:flex;align-items:flex-end;gap:2px;height:170px;margin:0.8rem 0 0.3rem;padding:0 2px}
+.wf .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;height:100%;min-width:0}
+.wf .bar{width:100%;border-radius:3px 3px 0 0;position:relative}
+.wf .bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);
+  font-weight:600;color:rgba(0,0,0,0.75)}
+.wf .lbl{font-size:var(--text-xs);color:var(--muted);text-align:center;line-height:1.25;margin-top:0.45rem}
+.wf .base{background:var(--surface-3);border:1px solid var(--border)}
+.wf .neg{background:linear-gradient(180deg,var(--red),#a34d40)}
+.wf .pos{background:linear-gradient(180deg,var(--green),#5c8f68)}
+.wf .fin{background:linear-gradient(180deg,var(--gold),#9a7431)}
+
+/* budget */
+.budget-total{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;background:var(--surface);
+  border:1px solid var(--gold-dim);border-radius:var(--r-lg);padding:1rem 1.4rem;margin-bottom:1.1rem}
+.budget-total .big{font-family:var(--font-display);font-size:var(--text-xl);font-weight:700;color:var(--gold-bright)}
+.budget-total .bar{flex:1;min-width:200px;height:0.65rem;background:var(--surface-3);border-radius:var(--r-full);overflow:hidden}
+.budget-total .bar i{display:block;height:100%;width:13.4%;background:linear-gradient(90deg,var(--gold-dim),var(--gold));border-radius:var(--r-full)}
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:1.1rem}
+.action{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--r-lg);padding:1.25rem 1.3rem;position:relative}
+.action .tag{display:inline-block;max-width:100%;font-size:var(--text-xs);color:var(--gold);border:1px solid var(--gold-dim);
+  border-radius:var(--r-full);padding:0.14rem 0.6rem;background:var(--surface-2);margin-bottom:0.55rem}
+.action h3{font-size:var(--text-base);font-weight:600}
+.action .cost{font-family:var(--font-display);font-size:var(--text-lg);color:var(--gold-bright);margin:0.2rem 0 0.6rem}
+.action dl{font-size:var(--text-sm);display:grid;grid-template-columns:5.2rem 1fr;gap:0.3rem 0.8rem}
+.action dt{color:var(--faint);font-size:var(--text-xs);padding-top:0.15rem}
+.action dd{color:var(--muted)} .action dd b{color:var(--text);font-weight:600}
+.rejected{margin-top:1.1rem;font-size:var(--text-sm);color:var(--muted);background:var(--surface);border:1px dashed var(--border);border-radius:var(--r-lg);padding:0.9rem 1.2rem}
+.rejected b{color:var(--text)}
+
+/* appendix */
+details.appendix{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--r-lg);padding:0.9rem 1.2rem;margin-top:0.7rem}
+details.appendix summary{cursor:pointer;font-weight:600;font-size:var(--text-sm);color:var(--gold-bright)}
+details.appendix[open]{padding-bottom:1.2rem}
+table.app{font-size:var(--text-xs);min-width:860px}
+table.app thead th{position:sticky;top:0;background:var(--surface-2);color:var(--muted);text-align:left;padding:0.5rem 0.6rem;border-bottom:1px solid var(--border)}
+table.app td{padding:0.5rem 0.6rem;border-bottom:1px solid var(--border-soft);vertical-align:top;color:var(--muted)}
+table.app td b{color:var(--text)}
+.foot{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--border-soft);font-size:var(--text-xs);color:var(--faint);display:flex;gap:2rem;flex-wrap:wrap;justify-content:space-between}
+.page-controls{display:flex;justify-content:space-between;gap:1rem;margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border-soft)}
+#pageControls[data-page="home"] a[href="#home"],#pageControls[data-page="appendix"] a[href="#appendix"]{display:none}
+#pageControls[data-page="home"]{justify-content:flex-end}
+.page-controls a{display:inline-flex;align-items:center;gap:0.5rem;padding:0.65rem 0.9rem;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);font-size:var(--text-sm)}
+.page-controls a:hover{border-color:var(--gold-dim);background:var(--surface-2);text-decoration:none}
+.overview-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(245px,100%),1fr));gap:0.75rem;margin-top:2rem}
+.overview-links a{display:block;padding:1rem 1.1rem;border:1px solid var(--border-soft);border-radius:var(--r-lg);background:var(--surface);transition:border-color .15s,transform .15s}
+.overview-links a:hover{border-color:var(--gold-dim);transform:translateY(-2px);text-decoration:none}
+.overview-links b{display:block;color:var(--gold-bright);font-size:var(--text-base);margin-bottom:0.25rem}
+.overview-links span{display:block;color:var(--muted);font-size:var(--text-xs);line-height:1.5}
+
+.chart-note{font-size:var(--text-xs);color:var(--faint);margin-top:0.5rem}
+@media (max-width:640px){
+  .topbar-inner{grid-template-columns:minmax(0,1fr);padding:0.6rem 1rem;gap:0.45rem}
+  .brand{grid-column:1;grid-row:1}
+  .filters{grid-column:1;grid-row:2;justify-content:flex-start}
+  .nav{grid-column:1;grid-row:3;margin:0 -0.25rem;padding:0.2rem 0}
+  main{padding:0 1rem 3rem}
+  .dgrid{grid-template-columns:1fr}
+  .sec-head{align-items:flex-start;gap:0.55rem}
+  .page-controls a{font-size:var(--text-xs);padding:0.55rem 0.65rem}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><span class="ace">The Gilded Ace</span><span class="sub">Floor Analytics</span></div>
+    <nav class="nav" aria-label="Dashboard pages">
+      <a href="#home">Overview</a>
+      <a href="#verdicts">Verdicts</a><a href="#location">Location</a><a href="#luck">Luck</a>
+      <a href="#leak">Leak</a><a href="#exposure">Exposure</a><a href="#model">Model</a>
+      <a href="#budget">Budget</a><a href="#appendix">Appendix</a>
+    </nav>
+    <div class="filters">
+      <label for="fromM">Period</label>
+      <select id="fromM" aria-label="From month"></select>
+      <select id="toM" aria-label="To month"></select>
+    </div>
+  </div>
+</div>
+
+<main>
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="kicker">A six-month floor investigation · Jan 1 – Jun 30, 2025 · 300 machines</div>
+  <h1>The House Edge Files:<br><em>case of the bottom ten</em></h1>
+  <p class="lede">Ten machines landed on the replacement list. Follow the evidence across location, game mix, uptime, and luck to see which machines need attention—and which need a better spot.</p>
+  <div class="verdict-strip">
+    <div class="vpill"><span class="dot" style="background:var(--red)"></span><b>1</b>&nbsp;payout leak — M-1158, $36.2K under theo (z = −4.5)</div>
+    <div class="vpill"><span class="dot" style="background:var(--blue)"></span><b>3</b>&nbsp;badly placed — Back Forty draws 35% less play than the floor</div>
+    <div class="vpill"><span class="dot" style="background:var(--plum)"></span><b>3</b>&nbsp;low-hold game (Royal Draw, 5% theo) in the weakest zone</div>
+    <div class="vpill"><span class="dot" style="background:var(--green)"></span><b>3</b>&nbsp;not the machine's fault — new install or already retired</div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <nav class="overview-links" aria-label="Explore analysis pages">
+    <a href="#verdicts"><b>01 · Verdicts</b><span>See the bottom-ten ranking and each machine's diagnosis.</span></a>
+    <a href="#location"><b>02 · Location</b><span>Compare zone traffic and machine play intensity.</span></a>
+    <a href="#luck"><b>03 · Luck</b><span>Separate ordinary variance from unusual results.</span></a>
+    <a href="#leak"><b>04 · Payout review</b><span>Examine the M-1158 hold outlier and its peers.</span></a>
+    <a href="#exposure"><b>05 · Exposure</b><span>Review time on floor, downtime, and game mix.</span></a>
+    <a href="#model"><b>06 · Model</b><span>View the holdout validation and floor forecast.</span></a>
+    <a href="#budget"><b>07 · Action plan</b><span>See the proposed moves, costs, and measurement plan.</span></a>
+    <a href="#appendix"><b>08 · Evidence</b><span>Trace the headline claims to supporting analysis.</span></a>
+  </nav>
+</header>
+
+<!-- ================= VERDICT TABLE ================= -->
+<section id="verdicts">
+  <div class="sec-head"><span class="sec-num">01</span><h2>The manager's list, re-tried</h2></div>
+  <p class="sec-sub">Every machine on the bottom 10 by total house win, with the diagnosis behind its rank.</p>
+  <p class="sec-sub">Values follow the selected period; the ranking stays fixed to the full six months, matching the GM's list. Select a row to open its case file.</p>
+  <div class="tbl-wrap">
+    <table class="vt" id="vtable">
+      <thead><tr>
+        <th>#</th><th>Machine</th><th>Zone</th><th>Game</th><th>Days on floor</th>
+        <th>House win</th><th>Win / avail-hr</th><th>Luck z</th><th>Play vs zone</th><th>Availability</th><th>Verdict</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="vtFoot"></div>
+  </div>
+</section>
+
+<!-- ================= LOCATION ================= -->
+<section id="location">
+  <div class="sec-head"><span class="sec-num">02</span><h2>Location: the Back Forty drag</h2></div>
+  <p class="sec-sub">In the full six-month ranking, nine of the ten worst earners sit in Back Forty, the floor's quietest corner. The chart updates its play rates for the selected period; traffic counts shown in the note are full-window averages.</p>
+  <p class="sec-sub">Across the full window, Back Forty averaged $122 of coin-in per machine-hour versus $189 across the floor. A healthy machine can still earn less because of its location.</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>Play intensity by zone</h3>
+      <div class="note">Bars and floor average follow the selected period. Zone entries/day use the full six-month average because monthly zone-level counts are not in this bundle.</div>
+      <div class="chart-box" style="height:320px"><canvas id="zoneChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Every machine, two ways to be bad</h3>
+      <div class="note">Play intensity (x) vs actual hold (y). Low-left machines earn little per hour at a weak hold;
+      Back Forty clusters left. Gold-ringed points are the manager's ten.</div>
+      <div class="legend-chips" id="zoneChips" role="group" aria-label="Zone filter"></div>
+      <div style="display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap">
+        <label for="bankSel" style="font-size:var(--text-xs);color:var(--muted)">Drill into bank</label>
+        <select id="bankSel" aria-label="Bank filter"></select>
+      </div>
+      <div class="chart-box" style="height:300px"><canvas id="scatterChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LUCK ================= -->
+<section id="luck">
+  <div class="sec-head"><span class="sec-num">03</span><h2>Luck: mostly noise</h2></div>
+  <p class="sec-sub">Slot results swing, so compare actual house win with theoretical win (coin-in × house edge) before calling a machine bad.</p>
+  <p class="sec-sub">Both charts recalculate for the selected period. Short ranges have less evidence, so treat their luck scores as a guide rather than a final diagnosis.</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>Cumulative luck residual, z-scored</h3>
+      <div class="note">Sum of (actual − theoretical) win, scaled by each machine's own daily variance.
+      Between the dashed lines, luck is a plausible explanation; outside, it is not.</div>
+      <div class="chart-box" style="height:330px"><canvas id="luckChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Theo vs actual, selected period</h3>
+      <div class="note">Compare actual and theoretical win for the selected months. A short window can make luck scores less reliable.</div>
+      <div class="chart-box" style="height:330px"><canvas id="theoChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LEAK ================= -->
+<section id="leak">
+  <div class="sec-head"><span class="sec-num">04</span><h2>The leak: machine M-1158</h2></div>
+  <p class="sec-sub">M-1158 is popular: it draws more play than its zone predicts (t = +6.3). Yet it kept only <span class="num">3.0%</span> of each dollar wagered, against a configured <span class="num">10%</span> hold.</p>
+  <p class="sec-sub">The charts and peer comparison update to the selected period. The full six-month review found a $36,165 shortfall (z = −4.5); treat it as a reason to verify the paytable, not as an accusation.</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>M-1158 hold, selected period</h3>
+      <div class="note">Actual hold and configured hold are shown for the selected months.</div>
+      <div class="chart-box" style="height:300px"><canvas id="m1158Chart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Desert Gold peers, selected-period hold</h3>
+      <div class="note">Peer hold values recalculate across the selected months; M-1158 is highlighted in red.</div>
+      <div class="chart-box" style="height:300px"><canvas id="dgChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EXPOSURE + DOWNTIME + GAME ================= -->
+<section id="exposure">
+  <div class="sec-head"><span class="sec-num">05</span><h2>Exposure, downtime, game mix</h2></div>
+  <p class="sec-sub">Three other explanations were tested. Three machines spent too little time on the floor to earn a comparable total.</p>
+  <p class="sec-sub">The table and monthly charts follow the selected period. In the full-window review, availability was 99.4–99.9% for all ten; floor-wide downtime cost about $100K, with the worst month in March.</p>
+  <p class="sec-sub">Royal Draw is configured for a 5% hold, half the floor average. Five of the ten use this title, which earns less per dollar played by design.</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>Days on the floor, selected period</h3>
+      <div class="note">Counts show active days within the selected period. Install and retirement dates explain partial exposure.</div>
+      <div class="chart-box" style="height:310px"><canvas id="daysChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Theoretical win lost to downtime, by month</h3>
+      <div class="note">Monthly downtime cost is recalculated for the selected months from downtime hours, play rate, and theoretical hold.</div>
+      <div class="chart-box" style="height:310px"><canvas id="downChart"></canvas></div>
+    </div>
+    <div class="card" style="grid-column:1/-1">
+      <h3>Game mix: what each title is configured to earn</h3>
+      <div class="note">Configured hold and realized win per available machine-hour recalculate for the selected period. Royal Draw's configured edge remains 5%.</div>
+      <div class="chart-box" style="height:330px"><canvas id="themeChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MODEL ================= -->
+<section id="model">
+  <div class="sec-head"><span class="sec-num">06</span><h2>Model and validation</h2></div>
+  <p class="sec-sub">Model validation is a fixed May–Jun holdout trained on Jan–Apr, so it does not change with the period filter. No future data enters training.</p>
+  <p class="sec-sub">The machine model predicts daily play intensity from zone, game, weekday and month. It estimates the effect of moving a machine, which informs the budget recommendations.</p>
+  <p class="sec-sub">The floor model forecasts daily coin-in by weekday to help time promotions. Fridays and Saturdays run about 25% above midweek.</p>
+  <div class="kpis" id="maeKpis"></div>
+  <div class="grid2">
+    <div class="card">
+      <h3>Holdout: predicted vs actual play intensity</h3>
+      <div class="note">18,788 machine-days, May–Jun. Points on the diagonal = perfect. The model beats the per-machine
+      average baseline by 12% MAE — enough to separate "weak machine" from "weak spot".</div>
+      <div class="chart-box" style="height:330px"><canvas id="modelScatter"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Daily floor coin-in forecast, May–Jun</h3>
+      <div class="note">Weekday-seasonal model vs the constant training-mean baseline. The seasonal model cuts daily MAE
+      from $218K to $69K — use it to time promotions and staffing to the weekend peak.</div>
+      <div class="chart-box" style="height:330px"><canvas id="fcChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BUDGET ================= -->
+<section id="budget">
+  <div class="sec-head"><span class="sec-num">07</span><h2>The $100,000 decision</h2></div>
+  <p class="sec-sub">These recommendations use the full six-month diagnosis and stay fixed as you change the evidence period.</p>
+  <p class="sec-sub">The plan commits $13,360 and holds $86,640 in reserve. When the diagnosis points to location or luck, keeping the remaining budget is a valid choice.</p>
+  <div class="budget-total">
+    <span class="big num">$13,360</span>
+    <span style="font-size:var(--text-sm);color:var(--muted)">committed of $100,000</span>
+    <div class="bar" role="img" aria-label="13.4 percent of budget committed"><i></i></div>
+    <span class="num" style="font-size:var(--text-sm);color:var(--green)">$86,640 held</span>
+  </div>
+  <div class="actions">
+    <div class="action">
+      <span class="tag">A-INSPECT ×1</span>
+      <h3>Verify M-1158's paytable</h3>
+      <div class="cost num">$1,200 · 1-day lead · 120 min downtime</div>
+      <dl>
+        <dt>Effect</dt><dd>If the configured RTP is wrong and is reset to 10%, M-1158 recovers about <b>$200/day</b> —
+          roughly <b>$4.4K in July</b> and <b>$6K/month</b> after.</dd>
+        <dt>Uncertainty</dt><dd>High variance in timing, low in size: the shortfall is 4.5σ below theory, but an
+          inspection buys information, not a guaranteed finding.</dd>
+        <dt>Measure</dt><dd>Daily hold vs the 10% theo for 8 weeks, diff-in-diff against the 48 other Desert Gold machines.</dd>
+        <dt>Evidence</dt><dd><a href="#leak">Section 04</a> — 3.0% hold vs 10% theo, all six months, peers at 7–14%.</dd>
+      </dl>
+    </div>
+    <div class="action">
+      <span class="tag">A-MOVE-MACHINE ×3</span>
+      <h3>Move M-1181, M-1265, M-1179 out of Back Forty</h3>
+      <div class="cost num">$5,400 · 2-day lead · 180 min downtime each</div>
+      <dl>
+        <dt>Effect</dt><dd>These three draw 20–24% less play than even Back Forty's average. Relocated to Main Entrance /
+          Center Pit slots, the model projects <b>~$2.6K/month each</b> in extra win (≈$7.8K/month total).</dd>
+        <dt>Uncertainty</dt><dd>Range $3–8K/month: part of each machine's low draw may be machine-specific and travel with it.</dd>
+        <dt>Measure</dt><dd>8-week diff-in-diff vs Back Forty Comet Cash controls (M-1063, M-1256) that stay put.</dd>
+        <dt>Evidence</dt><dd><a href="#location">Section 02</a> — zone play gap and location index 0.76–0.80.</dd>
+      </dl>
+    </div>
+    <div class="action">
+      <span class="tag">A-REPLACE-LEASE ×2</span>
+      <h3>Swap Royal Draw titles on M-1238 and M-1035</h3>
+      <div class="cost num">$6,760 · 14-day lead · 16 operating days each</div>
+      <dl>
+        <dt>Effect</dt><dd>Both draw <i>above</i> zone norms (t = +6.9, +5.9) but Royal Draw holds only 5%. A leased ~11%-hold
+          title on the same footprint projects <b>+$6–8K/month each</b> if coin-in holds.</dd>
+        <dt>Uncertainty</dt><dd>Widest range of the three ($0–8K each): a new title may draw less play than the incumbent
+          low-volatility game.</dd>
+        <dt>Measure</dt><dd>Play intensity and hold vs the three Royal Draw machines left as controls.</dd>
+        <dt>Evidence</dt><dd><a href="#exposure">Section 05</a> — game-mix table; <a href="#verdicts">Section 01</a> — play residuals.</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="rejected"><b>Considered and deferred:</b> Back Forty wayfinding signs ($7,500) — plausible zone-wide lift, but
+  wait 8 weeks and let the three moves measure how much of the gap is placement; a technician shift ($11,520) — rejected
+  because the bottom ten lost about $766 to downtime in six months; promotion weekend ($15,000) — floor demand is stable and
+  seasonal, so the money is better spent where the diagnosis points.</div>
+</section>
+
+<!-- ================= APPENDIX ================= -->
+<section id="appendix">
+  <div class="sec-head"><span class="sec-num">08</span><h2>Claims and evidence</h2></div>
+  <p class="sec-sub">This evidence matrix reports the full six-month analysis and stays fixed when the period filter changes.</p>
+  <details class="appendix" open>
+    <summary>Claims &amp; evidence matrix</summary>
+    <div class="tbl-wrap" style="margin-top:0.8rem">
+    <table class="app">
+      <thead><tr><th>Claim</th><th>Table → result</th><th>Alternative tested</th><th>Limitation</th></tr></thead>
+      <tbody>
+        <tr><td><b>9 of 10 worst earners are in Back Forty</b></td><td>prepared_daily_view → bottom 10 by SUM(house_win_usd): 9 in Z-B40, 1 in High-Limit</td><td>Maybe Back Forty machines are just newer/weaker titles → theme mix is similar to other zones; play gap persists within theme</td><td>Zone assignment uses each machine's modal zone; machines can move (placements)</td></tr>
+        <tr><td><b>Back Forty is a low-traffic zone</b></td><td>zone_traffic_hourly + prepared_daily_view → ~540 entries/day vs 2,300–4,100 elsewhere; $122 vs $189 coin-in per machine-hour</td><td>Counter coverage gaps → checked counter_status; coverage is comparable across zones</td><td>Entries count pass-bys, not unique visitors; seated players aren't counted</td></tr>
+        <tr><td><b>M-1158 is a payout leak, not bad luck</b></td><td>machine_day → hold 3.0% vs 10% theo, all 6 months, z = −4.5; 48 Desert Gold peers hold 7–14%</td><td>High volatility → Desert Gold is medium-volatility; a 4-point persistent hold gap across 181 days is not variance</td><td>Proves misconfiguration is likely, not certain — inspection is the test; no accusation of wrongdoing</td></tr>
+        <tr><td><b>Most of the bottom ten were not unlucky</b></td><td>prepared_daily_view → luck residual z-scores: 8 of 10 within ±2.3</td><td>Short windows shrink z → M-5076 (49 days) z = −0.77 even with a small sample</td><td>z-scores assume independent daily residuals, a simplification</td></tr>
+        <tr><td><b>Downtime is not the bottom ten's problem</b></td><td>prepared_daily_view → availability 99.4–99.9% for all ten; about $766 estimated lost theo win in 6 months</td><td>Faults opened (1–5 per machine) → faults rarely became long outages for these machines</td><td>Floor-wide, downtime cost ~$100K theo — a real problem, just not this one</td></tr>
+        <tr><td><b>Royal Draw structurally earns less</b></td><td>game_math + machine_day → theo hold 5% vs 7–12% for other titles; 5 of the bottom ten run it</td><td>Low play instead of low hold → Royal Draw's play intensity ($201/hr) is above the floor median ($187)</td><td>Player-friendly games may drive loyalty value not captured in hold</td></tr>
+        <tr><td><b>M-5076's rank is an artifact of install date</b></td><td>machines → installed 2025-05-13, 49 days on floor; play residual t = +0.9 (normal)</td><td>New-machine ramp → its per-hour play matches zone norms from week one</td><td>49 days is a short read; re-review after a full quarter</td></tr>
+        <tr><td><b>Moves are worth ~$2.6K/month each</b></td><td>Model counterfactual → Comet Cash play intensity 94.6 (Back Forty) → 181.6 (Center Pit), × location index 0.76–0.80</td><td>Machine-specific draw → range $1–2.6K; diff-in-diff vs staying controls will resolve it</td><td>Model MAE $41/avail-hr; empty slot availability at destination not verified</td></tr>
+        <tr><td><b>Weekday forecast beats constant baseline</b></td><td>property_day → MAE $68,699 vs $218,258 on May–Jun holdout</td><td>Overfitting to Jan–Apr → single seasonal mean per weekday, 7 parameters, no future data</td><td>Holidays and conventions (events table) not yet in the model</td></tr>
+        <tr><td><b>M-1162 is a miss by the naive list</b></td><td>Model residuals → play intensity 5.9σ below its Garage Entrance location, yet ranked 13th-worst only by total win</td><td>Bank-level effect → other machines in its bank draw normally</td><td>Next-cycle replacement candidate; not in this budget's three action types</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </details>
+</section>
+
+<nav class="page-controls" id="pageControls" aria-label="Page navigation"></nav>
+
+<div class="foot">
+  <span>The Gilded Ace — floor analytics · synthetic data, TAMU Datathon Dashboard Royale (release 0.9.0-draft)</span>
+  <span>Gaming day = 6am–6am · Carded play ≠ total play · Cents vs USD handled per data dictionary</span>
+</div>
+</main>
+
+<!-- drawer -->
+<div class="drawer-veil" id="veil"></div>
+<aside class="drawer" id="drawer" aria-label="Machine detail">
+  <button class="close" id="drawerClose" aria-label="Close">✕</button>
+  <div id="drawerBody"></div>
+</aside>
+
+<script>
+const DATA = __DATA__;
+const MONTHS = ['2025-01','2025-02','2025-03','2025-04','2025-05','2025-06'];
+const MLBL = {['2025-01']:'Jan',['2025-02']:'Feb',['2025-03']:'Mar',['2025-04']:'Apr',['2025-05']:'May',['2025-06']:'Jun'};
+const ZC = {
+  'Back Forty':'#d9a94e','Bar Row':'#5cb8ae','Center Pit':'#6fa8c9','Garage Entrance':'#b48ecb',
+  'High-Limit Room':'#d96a5a','Hotel Corridor':'#7fb98b','Main Entrance':'#c9b18a'};
+const fmt$ = v => (v<0?'−$':'$') + Math.abs(Math.round(v)).toLocaleString('en-US');
+const fmtK = v => (v<0?'−$':'$') + (Math.abs(v)/1000).toFixed(1) + 'K';
+
+/* ---------- period filter ---------- */
+let fromM = '2025-01', toM = '2025-06';
+const fromSel = document.getElementById('fromM'), toSel = document.getElementById('toM');
+MONTHS.forEach(m => { fromSel.add(new Option(MLBL[m]+' 2025', m)); toSel.add(new Option(MLBL[m]+' 2025', m)); });
+fromSel.value = fromM; toSel.value = toM;
+fromSel.onchange = () => { fromM = fromSel.value; if (MONTHS.indexOf(fromM) > MONTHS.indexOf(toM)) { toM = fromM; toSel.value = toM; } refreshAll(); };
+toSel.onchange = () => { toM = toSel.value; if (MONTHS.indexOf(fromM) > MONTHS.indexOf(toM)) { fromM = toM; fromSel.value = fromM; } refreshAll(); };
+const inPeriod = m => m >= fromM && m <= toM;
+const periodMM = () => DATA.machine_month.filter(r => inPeriod(r.month));
+const periodMonths = () => MONTHS.filter(inPeriod);
+function selectedCalendarDays(){
+  return periodMonths().reduce((sum,month)=>{
+    const [year,mo]=month.split('-').map(Number);
+    return sum+new Date(Date.UTC(year,mo,0)).getUTCDate();
+  },0);
+}
+function periodMetrics(id){
+  const rows=periodMM().filter(r=>r.machine_id===id);
+  const daily=DATA.b10_daily.filter(r=>r.machine_id===id&&inPeriod(r.gaming_date.slice(0,7)));
+  const sum=(key)=>rows.reduce((total,row)=>total+(row[key]||0),0);
+  const residuals=daily.map(r=>r.house_win_usd-r.theo_usd);
+  const residualMean=residuals.length?residuals.reduce((a,b)=>a+b,0)/residuals.length:0;
+  const residualSd=residuals.length>1?Math.sqrt(residuals.reduce((s,x)=>s+(x-residualMean)**2,0)/(residuals.length-1)):0;
+  const luck=sum('luck');
+  return {rows,daily,coin:sum('coin_in'),win:sum('house_win'),theo:sum('theo'),avail:sum('avail'),
+    faults:sum('faults'),down:sum('down_hr'),days:new Set(daily.map(r=>r.gaming_date)).size,
+    availability:daily.length?sum('avail')/(daily.length*24):0,
+    luck,z:residualSd?luck/(residualSd*Math.sqrt(residuals.length)):null};
+}
+function periodFloorMetrics(){
+  const rows=periodMM();
+  const coin=rows.reduce((s,r)=>s+r.coin_in,0),win=rows.reduce((s,r)=>s+r.house_win,0),
+    theo=rows.reduce((s,r)=>s+r.theo,0),avail=rows.reduce((s,r)=>s+r.avail,0);
+  return {coin,win,theo,avail,coinHr:avail?coin/avail:0,winHr:avail?win/avail:0,hold:coin?win/coin:0,theoHold:coin?theo/coin:0};
+}
+function selectedPeriodLabel(){return `${MLBL[fromM]}–${MLBL[toM]} 2025`;}
+
+/* ---------- KPIs ---------- */
+function renderKPIs(){
+  const mm = periodMM();
+  const floor=periodFloorMetrics();
+  const b10=DATA.machines.map(m=>({id:m.machine_id,...periodMetrics(m.machine_id)}));
+  const b10Win = b10.reduce((s,r)=>s+r.win,0);
+  const b10Avail=b10.reduce((s,r)=>s+r.avail,0);
+  const b10Expected=b10Avail*floor.winHr;
+  const gap = b10Expected - b10Win;
+  const zoneAgg={};
+  mm.forEach(r=>{const z=zoneAgg[r.zone_name]||(zoneAgg[r.zone_name]={coin:0,avail:0});z.coin+=r.coin_in;z.avail+=r.avail;});
+  const zoneEffect=b10.reduce((total,m)=>total+m.rows.reduce((s,r)=>s+r.avail*(floor.coinHr-(zoneAgg[r.zone_name]?.avail?zoneAgg[r.zone_name].coin/zoneAgg[r.zone_name].avail:floor.coinHr))*floor.hold,0),0);
+  const leak=periodMetrics('M-1158');
+  const b10Ids=new Set(DATA.machines.map(m=>m.machine_id));
+  const b10Down=DATA.b10_daily.filter(r=>b10Ids.has(r.machine_id)&&inPeriod(r.gaming_date.slice(0,7)))
+    .reduce((s,r)=>s+(r.available_hours?(24-r.available_hours)*r.theo_usd/r.available_hours:0),0);
+  const availRates=b10.map(m=>m.availability).filter(x=>x>0);
+  const availabilityRange=availRates.length?`${(Math.min(...availRates)*100).toFixed(1)}–${(Math.max(...availRates)*100).toFixed(1)}%`:'—';
+  const floorCoin=floor.coin;
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi"><span class="v num">${fmt$(b10Win)}</span><span class="l">bottom-10 house win, selected period</span>
+      <span class="d">vs ${fmt$(b10Expected)} expected at floor-average win rate</span></div>
+    <div class="kpi"><span class="v ${gap>=0?'bad':'good'} num">${fmt$(-gap)}</span><span class="l">gap vs floor norm, selected period</span>
+      <span class="d">estimated location contribution: ${fmt$(zoneEffect)} for ${selectedPeriodLabel()}</span></div>
+    <div class="kpi"><span class="v ${leak.theo-leak.win>0?'bad':'good'} num">${fmt$(leak.theo-leak.win)}</span><span class="l">M-1158 theo gap, selected period</span>
+      <span class="d">${leak.coin?((leak.win/leak.coin)*100).toFixed(1):'—'}% hold vs ${(leak.theoHold*100).toFixed(1)}% configured${leak.z==null?'':` · z = ${leak.z.toFixed(1)}`}</span></div>
+    <div class="kpi"><span class="v good num">${fmt$(b10Down)}</span><span class="l">bottom-10 estimated downtime cost</span>
+      <span class="d">${availabilityRange} available during ${selectedPeriodLabel()}</span></div>
+    <div class="kpi"><span class="v num">${(floorCoin/1e6).toFixed(0)}M</span><span class="l">floor coin-in, selected period</span>
+      <span class="d">floor coin-in during ${selectedPeriodLabel()}</span></div>
+    <div class="kpi"><span class="v num">$13,360</span><span class="l">of $100K budget committed</span>
+      <span class="d">3 action types · $86,640 held</span></div>`;
+}
+
+/* ---------- verdict table ---------- */
+function renderTable(){
+  const mm = periodMM();
+  const byId = {};
+  mm.forEach(r => { (byId[r.machine_id] = byId[r.machine_id] || []).push(r); });
+  const zoneRate={};
+  mm.forEach(r=>{const z=zoneRate[r.zone_name]||(zoneRate[r.zone_name]={coin:0,avail:0});z.coin+=r.coin_in;z.avail+=r.avail;});
+  const tb = document.querySelector('#vtable tbody');
+  tb.innerHTML = '';
+  DATA.machines.forEach(m => {
+    const rows = byId[m.machine_id] || [];
+    const stats=periodMetrics(m.machine_id);
+    const winHr=stats.avail?stats.win/stats.avail:0;
+    const z=stats.z;
+    const coinHr=stats.avail?stats.coin/stats.avail:0;
+    const zone=zoneRate[m.zone_main];
+    const li=zone&&zone.avail?coinHr/(zone.coin/zone.avail):0;
+    const cls = t => t==null?'':(t>0?'pos':'neg');
+    const tr = document.createElement('tr');
+    tr.dataset.mid = m.machine_id;
+    tr.innerHTML = `
+      <td class="rank num">${m.rank}</td>
+      <td class="mach">${m.machine_id}</td>
+      <td>${m.zone_main}</td>
+      <td>${m.theme}</td>
+      <td class="num">${stats.days}</td>
+      <td class="num ${cls(stats.win)}">${fmt$(stats.win)}</td>
+      <td class="num">$${winHr.toFixed(1)}</td>
+      <td class="num ${cls(z)}">${z==null?'—':(z>0?'+':'')+z.toFixed(1)}</td>
+      <td class="num ${cls(li-1)}">${(li*100).toFixed(0)}%</td>
+      <td class="num">${(stats.availability*100).toFixed(1)}%</td>
+      <td><span class="vchip vc-${m.vclass}">${m.verdict}</span></td>`;
+    tr.addEventListener('click', () => openDrawer(m.machine_id));
+    tb.appendChild(tr);
+  });
+  document.getElementById('vtFoot').textContent =
+    `Win / avail-hr: exposure-adjusted earning rate. Luck z: cumulative (actual − theo) win in standard errors; |z| < 2 ≈ noise. ` +
+    `Play vs zone: machine's play intensity relative to its zone average (100% = zone norm). Availability = available ÷ scheduled hours.`;
+}
+
+/* ---------- charts ---------- */
+Chart.defaults.font.family = "'Switzer','Helvetica Neue',sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#9db0a4';
+Chart.defaults.borderColor = '#263630';
+const gridC = {color:'#1d2b25'};
+
+let zoneChart, scatterChart, luckChart, theoChart, m1158Chart, dgChart, daysChart, downChart, themeChart, modelScatter, fcChart;
+let zoneFilter = 'ALL', bankFilter = 'ALL';
+
+function mmAgg(){ // per-machine aggregates for selected period
+  const byId = {};
+  periodMM().forEach(r => { (byId[r.machine_id] = byId[r.machine_id] || []).push(r); });
+  return Object.entries(byId).map(([id, rows]) => {
+    const meta = DATA.all_machines.find(x => x.machine_id === id) || {};
+    return {
+      id, zone: meta.zone_main, theme: meta.theme, bank: meta.bank, bottom10: !!meta.bottom10,
+      coin: rows.reduce((s,r)=>s+r.coin_in,0), win: rows.reduce((s,r)=>s+r.house_win,0),
+      theo: rows.reduce((s,r)=>s+r.theo,0), avail: rows.reduce((s,r)=>s+r.avail,0)
+    };
+  });
+}
+
+function renderZoneChart(){
+  const agg = mmAgg();
+  const zones = {};
+  let totCoin = 0, totAvail = 0;
+  agg.forEach(r => { (zones[r.zone] = zones[r.zone] || {coin:0, avail:0}); zones[r.zone].coin += r.coin; zones[r.zone].avail += r.avail; totCoin += r.coin; totAvail += r.avail; });
+  const floorHr = totAvail ? totCoin/totAvail : DATA.floor_coin_hr;
+  const zs = DATA.zones.map(z => ({name: z.zone_name, coin_hr: zones[z.zone_name] ? zones[z.zone_name].coin/zones[z.zone_name].avail : 0, entries: z.entries}));
+  zs.sort((a,b) => a.coin_hr - b.coin_hr);
+  if (zoneChart) zoneChart.destroy();
+  zoneChart = new Chart(document.getElementById('zoneChart'), {
+    type: 'bar',
+    data: { labels: zs.map(z=>z.name),
+      datasets: [{ data: zs.map(z=>Math.round(z.coin_hr)),
+        backgroundColor: zs.map(z=>z.name==='Back Forty' ? '#d9a94e' : '#2a3f36'), borderColor: zs.map(z=>ZC[z.name]||'#2a3f36'), borderWidth: 1.5,
+        borderRadius: 4 }]},
+    options: { indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{display:false}, tooltip:{ callbacks:{ label: c => ` $${c.parsed.x} coin-in per available machine-hour · ~${zs[c.dataIndex].entries.toLocaleString()} zone entries/day` } } },
+      scales: { x: { grid:gridC, title:{display:true,text:'Coin-in per available machine-hour ($)'}, suggestedMax: Math.max(240, floorHr*1.25) }, y:{grid:{display:false}} } },
+    plugins: [{ id:'floorline', afterDatasetsDraw(ch){
+      const x = ch.scales.x.getPixelForValue(floorHr), a = ch.chartArea, c = ch.ctx;
+      if (x <= a.left || x >= a.right) return;
+      c.save(); c.strokeStyle = '#f2cd85'; c.setLineDash([5,4]); c.lineWidth = 1.4;
+      c.beginPath(); c.moveTo(x, a.top); c.lineTo(x, a.bottom); c.stroke();
+      c.setLineDash([]); c.fillStyle = '#f2cd85'; c.font = "600 11px Switzer, sans-serif";
+      c.textAlign = x > a.right - 110 ? 'right' : 'left';
+      c.fillText('floor avg $' + Math.round(floorHr), x + (x > a.right - 110 ? -5 : 5), a.top + 12);
+      c.restore();
+    }}]
+  });
+}
+
+function renderScatter(){
+  let agg = mmAgg().filter(r => r.avail > 0 && r.coin > 0);
+  if (zoneFilter !== 'ALL') agg = agg.filter(r => r.zone === zoneFilter);
+  if (bankFilter !== 'ALL') agg = agg.filter(r => r.bank === bankFilter);
+  const pts = agg.map(r => ({
+    x: Math.round(r.coin/r.avail), y: +(r.win/r.coin*100).toFixed(2),
+    r: Math.max(3, Math.sqrt(Math.abs(r.win))/14),
+    id: r.id, zone: r.zone, theme: r.theme, win: r.win, bottom10: r.bottom10 }));
+  if (scatterChart) scatterChart.destroy();
+  scatterChart = new Chart(document.getElementById('scatterChart'), {
+    type: 'bubble',
+    data: { datasets: Object.keys(ZC).map(z => ({
+      label: z, backgroundColor: ZC[z]+'66', borderColor: pts => null,
+      data: pts.filter(p => p.zone === z).map(p => ({...p, borderColor: p.bottom10 ? '#f2cd85' : ZC[p.zone], borderWidth: p.bottom10 ? 2.5 : 1}))
+    })).concat([{
+      label: 'Manager bottom 10 (ring)', data: [], pointStyle:'rectRounded'
+    }]) },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{display:false}, tooltip:{ callbacks:{ label: c => {
+        const p = c.raw; return ` ${p.id} · ${p.zone} · ${p.theme}\n hold ${p.y}% · $${p.x}/hr · win ${fmt$(p.win)}`; } } } },
+      scales: { x: { grid:gridC, title:{display:true,text:'Coin-in per available machine-hour ($)'}, min:0 },
+                y: { grid:gridC, title:{display:true,text:'Actual hold (%)'}, suggestedMin:0 } } }
+  });
+  // style gold rings: overlay via scriptable borderColor
+  scatterChart.data.datasets.forEach(ds => {
+    ds.borderColor = c => c.raw && c.raw.bottom10 ? '#f2cd85' : (ZC[ds.label]||'#555');
+    ds.borderWidth = c => c.raw && c.raw.bottom10 ? 2.5 : 1;
+  });
+  scatterChart.update();
+}
+
+function renderLuck(){
+  const ms=DATA.machines.map(m=>({...m,...periodMetrics(m.machine_id)})).filter(m=>m.days>0).sort((a,b)=>(a.z??0)-(b.z??0));
+  if (luckChart) luckChart.destroy();
+  luckChart = new Chart(document.getElementById('luckChart'), {
+    type: 'bar',
+    data: { labels: ms.map(m=>m.machine_id),
+      datasets: [{ data: ms.map(m=>m.z==null?0:+m.z.toFixed(2)),
+        backgroundColor: ms.map(m=>Math.abs(m.z||0)>=2 ? '#d96a5a' : '#2a4a3a'), borderRadius:3 }]},
+    options: { indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` z = ${c.parsed.x}`}}},
+      scales:{ x:{grid:gridC, title:{display:true,text:'Luck z-score (std. errors)'}, suggestedMin:-5, suggestedMax:3}, y:{grid:{display:false}} } },
+    plugins: [{ id:'bands', afterDraw(ch){
+      const x = ch.scales.x, y = ch.chartArea;
+      const line = v => { const px = x.getPixelForValue(v); if (px > y.left && px < y.right){
+        const c = ch.ctx; c.save(); c.strokeStyle='#d9a94e'; c.setLineDash([4,4]); c.lineWidth=1;
+        c.beginPath(); c.moveTo(px, y.top); c.lineTo(px, y.bottom); c.stroke(); c.restore(); } };
+      line(2); line(-2);
+    }}]
+  });
+  if (theoChart) theoChart.destroy();
+  theoChart = new Chart(document.getElementById('theoChart'), {
+    type: 'bar',
+    data: { labels: ms.map(m=>m.machine_id),
+      datasets: [
+        { label:'Actual win', data: ms.map(m=>Math.round(m.win)), backgroundColor:'#2a4a3a', borderRadius:3 },
+        { label:'Theoretical win', data: ms.map(m=>Math.round(m.theo)), backgroundColor:'#3a4a6a', borderRadius:3 }]},
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{boxWidth:10}}, tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt$(c.parsed.y)}`}}},
+      scales:{ x:{grid:{display:false}}, y:{grid:gridC, ticks:{callback:v=>'$'+(v/1000)+'K'}} } }
+  });
+}
+
+function renderLeak(){
+  const rows=DATA.m1158_monthly.filter(r=>inPeriod(r.month));
+  if (m1158Chart) m1158Chart.destroy();
+  m1158Chart = new Chart(document.getElementById('m1158Chart'), {
+    type: 'line',
+    data: { labels: rows.map(r=>MLBL[r.month]),
+      datasets: [
+        { label:'Actual hold', data: rows.map(r=>+(r.hold*100).toFixed(2)), borderColor:'#d96a5a', backgroundColor:'#d96a5a22', fill:true, tension:0.3, pointRadius:4 },
+        { label:'Configured hold (theo)', data: rows.map(r=>+(r.theo_hold*100).toFixed(1)), borderColor:'#d9a94e', borderDash:[6,4], pointRadius:0, borderWidth:2 }]},
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{boxWidth:10}}},
+      scales:{ y:{grid:gridC, title:{display:true,text:'Hold (%)'}, suggestedMin:-2, suggestedMax:11}, x:{grid:{display:false}} } }
+  });
+  const dgIds=new Set(DATA.all_machines.filter(m=>m.theme==='Desert Gold').map(m=>m.machine_id));
+  const dgAgg={};
+  periodMM().filter(r=>dgIds.has(r.machine_id)).forEach(r=>{const p=dgAgg[r.machine_id]||(dgAgg[r.machine_id]={coin:0,win:0});p.coin+=r.coin_in;p.win+=r.house_win;});
+  const peers=Object.entries(dgAgg).map(([id,p])=>({id,h:p.coin?p.win/p.coin:0})).sort((a,b)=>a.h-b.h);
+  if (dgChart) dgChart.destroy();
+  dgChart = new Chart(document.getElementById('dgChart'), {
+    type: 'bar',
+    data: { labels: peers.map(p=>p.id),
+      datasets: [{ data: peers.map(p=>+(p.h*100).toFixed(2)),
+        backgroundColor: peers.map(p=>p.id==='M-1158' ? '#d96a5a' : '#2a4a3a'), borderRadius:2 }]},
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${peers[c.dataIndex].id}: ${c.parsed.y}% hold`}}},
+      scales:{ x:{grid:{display:false}, ticks:{maxRotation:90, minRotation:90, font:{size:9}}},
+               y:{grid:gridC, title:{display:true,text:`${selectedPeriodLabel()} hold (%)`} } } }
+  });
+}
+
+function renderExposure(){
+  const ms=DATA.machines.map(m=>({...m,...periodMetrics(m.machine_id)})).filter(m=>m.days>0);
+  if (daysChart) daysChart.destroy();
+  daysChart = new Chart(document.getElementById('daysChart'), {
+    type: 'bar',
+    data: { labels: ms.map(m=>m.machine_id),
+      datasets: [{ data: ms.map(m=>m.days),
+        backgroundColor: ms.map(m=>m.days<selectedCalendarDays() ? '#d9a94e' : '#2a4a3a'), borderRadius:3 }]},
+    options: { indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>{
+        const m = ms[c.dataIndex];
+        return ` ${m.days} days · installed ${m.install||'—'}${m.retire&&m.retire!=='None'?' · retired '+m.retire:''}`;}}}},
+      scales:{ x:{grid:gridC, title:{display:true,text:`Days on floor (${selectedPeriodLabel()})`}, suggestedMax:selectedCalendarDays()}, y:{grid:{display:false}} } }
+  });
+  const months=periodMonths();
+  const downtimeByMonth=DATA.downtime_monthly;
+  if (downChart) downChart.destroy();
+  downChart = new Chart(document.getElementById('downChart'), {
+    type: 'bar',
+    data: { labels: months.map(m=>MLBL[m]),
+      datasets: [{ data: months.map(m=>Math.round(downtimeByMonth[m]||0)),
+        backgroundColor: months.map(m=>m==='2025-03' ? '#d96a5a' : '#2a4a3a'), borderRadius:3 }]},
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${fmt$(c.parsed.y)} theoretical win lost`}}},
+      scales:{ y:{grid:gridC, title:{display:true,text:'Theo win lost to downtime ($)'}, ticks:{callback:v=>'$'+(v/1000)+'K'}}, x:{grid:{display:false}} } }
+  });
+  const themeAgg={};
+  periodMM().forEach(r=>{const t=themeAgg[r.theme]||(themeAgg[r.theme]={coin:0,win:0,theo:0,avail:0});t.coin+=r.coin_in;t.win+=r.house_win;t.theo+=r.theo;t.avail+=r.avail;});
+  const ts=Object.entries(themeAgg).map(([theme,t])=>({theme,theo_hold:t.coin?t.theo/t.coin:0,win_hr:t.avail?t.win/t.avail:0})).sort((a,b)=>a.theo_hold-b.theo_hold);
+  if (themeChart) themeChart.destroy();
+  themeChart = new Chart(document.getElementById('themeChart'), {
+    data: { labels: ts.map(t=>t.theme),
+      datasets: [
+        { type:'bar', label:'Win per available machine-hour ($)', data: ts.map(t=>+t.win_hr.toFixed(1)),
+          backgroundColor: ts.map(t=>t.theme==='Royal Draw' ? '#b48ecb' : '#2a4a3a'), borderRadius:4, yAxisID:'y' },
+        { type:'line', label:'Configured hold (%)', data: ts.map(t=>+(t.theo_hold*100).toFixed(1)),
+          borderColor:'#d9a94e', pointRadius:4, borderWidth:2, yAxisID:'y1' }]},
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{boxWidth:10}}},
+      scales:{ x:{grid:{display:false}}, y:{grid:gridC, position:'left', title:{display:true,text:'Win / avail-hr ($)'}},
+               y1:{grid:{display:false}, position:'right', title:{display:true,text:'Theoretical hold (%)'}, suggestedMin:0, suggestedMax:14} } }
+  });
+}
+
+function renderModel(){
+  document.getElementById('maeKpis').innerHTML = `
+    <div class="kpi"><span class="v num">$41.32</span><span class="l">machine model MAE, $/avail-hr</span>
+      <span class="d">baseline (per-machine mean): $46.70 · −11.5%</span></div>
+    <div class="kpi"><span class="v num">18,788</span><span class="l">machine-days in the May–Jun holdout</span>
+      <span class="d">trained Jan–Apr only · no leakage</span></div>
+    <div class="kpi"><span class="v num">$68.7K</span><span class="l">floor forecast daily MAE (weekday model)</span>
+      <span class="d">constant-mean baseline: $218.3K · −69%</span></div>
+    <div class="kpi"><span class="v num">+25%</span><span class="l">Fri/Sat coin-in vs midweek</span>
+      <span class="d">why the seasonal model earns its keep</span></div>`;
+  const pts = DATA.holdout_scatter;
+  if (modelScatter) modelScatter.destroy();
+  modelScatter = new Chart(document.getElementById('modelScatter'), {
+    type: 'scatter',
+    data: { datasets: [{ data: pts.map(p=>({x:+p.pred.toFixed(1), y:+p.actual.toFixed(1), z:p.zone_name})),
+      backgroundColor: pts.map(p=>ZC[p.zone_name]+'55'), borderColor:'#263630', pointRadius:3.2 }]},
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` predicted $${c.parsed.x} · actual $${c.parsed.y}/hr`}}},
+      scales:{ x:{grid:gridC, title:{display:true,text:'Predicted play intensity ($/avail-hr)'}, suggestedMin:0, suggestedMax:420},
+               y:{grid:gridC, title:{display:true,text:'Actual ($/avail-hr)'}, suggestedMin:0, suggestedMax:420} } },
+    plugins: [{ id:'diag', afterDraw(ch){
+      const a = ch.chartArea, c = ch.ctx;
+      c.save(); c.strokeStyle='#d9a94e'; c.setLineDash([5,5]); c.lineWidth=1.2;
+      c.beginPath(); c.moveTo(a.left, a.bottom); c.lineTo(a.right, a.top); c.stroke(); c.restore();
+    }}]
+  });
+  const fc = DATA.forecast;
+  if (fcChart) fcChart.destroy();
+  fcChart = new Chart(document.getElementById('fcChart'), {
+    type: 'line',
+    data: { labels: fc.map(r=>r.gaming_date.slice(5)),
+      datasets: [
+        { label:'Actual', data: fc.map(r=>Math.round(r.coin_in_usd/1000)), borderColor:'#ece9dd', borderWidth:1.6, pointRadius:0, tension:0.25 },
+        { label:'Weekday model', data: fc.map(r=>Math.round(r.pred_wd/1000)), borderColor:'#5cb8ae', borderWidth:1.6, pointRadius:0, tension:0.25 },
+        { label:'Constant mean', data: fc.map(r=>Math.round(r.pred_const/1000)), borderColor:'#d96a5a', borderDash:[5,4], borderWidth:1.4, pointRadius:0 }]},
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{boxWidth:10}}},
+      scales:{ y:{grid:gridC, title:{display:true,text:'Daily coin-in ($K)'}}, x:{grid:{display:false}, ticks:{maxTicksLimit:10}} } }
+  });
+}
+
+/* ---------- drawer ---------- */
+function openDrawer(mid){
+  const m = DATA.machines.find(x=>x.machine_id===mid);
+  const stats=periodMetrics(mid), floor=periodFloorMetrics();
+  const zoneRows=periodMM().filter(r=>r.zone_name===m.zone_main);
+  const zoneCoin=zoneRows.reduce((s,r)=>s+r.coin_in,0),zoneAvail=zoneRows.reduce((s,r)=>s+r.avail,0);
+  const zoneCoinHr=zoneAvail?zoneCoin/zoneAvail:floor.coinHr;
+  const themeRows=periodMM().filter(r=>r.theme===m.theme);
+  const themeCoin=themeRows.reduce((s,r)=>s+r.coin_in,0),themeTheo=themeRows.reduce((s,r)=>s+r.theo,0);
+  const themeHold=themeCoin?themeTheo/themeCoin:0;
+  const ownCoinHr=stats.avail?stats.coin/stats.avail:0;
+  const expected=selectedCalendarDays()*24*floor.winHr;
+  const afterExposure=stats.avail*floor.winHr;
+  const afterZone=stats.avail*zoneCoinHr*floor.hold;
+  const afterGame=stats.avail*zoneCoinHr*themeHold;
+  const afterPlay=stats.avail*ownCoinHr*themeHold;
+  const d={floor_norm:expected,exposure:afterExposure-expected,zone:afterZone-afterExposure,
+    game:afterGame-afterZone,own_play:afterPlay-afterGame,hold_luck:stats.win-afterPlay,actual:stats.win};
+  const daily=stats.daily;
+  const vc = {LEAK:'vc-leak', LOCATION:'vc-loc', 'GAME MIX + ZONE':'vc-game', 'NEW INSTALL':'vc-new', 'RETIRED EARLY':'vc-ret'};
+  document.querySelectorAll('#vtable tbody tr').forEach(tr => tr.classList.toggle('sel', tr.dataset.mid===mid));
+  document.getElementById('drawerBody').innerHTML = `
+    <h3>${m.machine_id}</h3>
+    <div class="meta">${m.zone_main} · bank ${m.bank} · ${m.theme} (${m.mfr||''}) · installed ${m.install}${m.retire&&m.retire!=='None'?' · retired '+m.retire:''}</div>
+    <span class="vchip ${vc[m.verdict]}">${m.verdict}</span>
+    <h4>Selected-period scorecard · ${selectedPeriodLabel()}</h4>
+    <div class="dgrid">
+      <div><span>House win</span><b class="num">${fmt$(stats.win)}</b></div>
+      <div><span>Theoretical win</span><b class="num">${fmt$(stats.theo)}</b></div>
+      <div><span>Luck residual (z)</span><b class="num">${fmt$(stats.luck)} (z ${stats.z==null?'—':`${stats.z>0?'+':''}${stats.z.toFixed(1)}`})</b></div>
+      <div><span>Win / available hour</span><b class="num">$${(stats.avail?stats.win/stats.avail:0).toFixed(1)} <span style="color:var(--faint);font-weight:400">(floor $${floor.winHr.toFixed(1)})</span></b></div>
+      <div><span>Play vs zone norm</span><b class="num">${zoneCoinHr?(ownCoinHr/zoneCoinHr*100).toFixed(0):'—'}%</b></div>
+      <div><span>Availability</span><b class="num">${(stats.availability*100).toFixed(1)}%</b></div>
+      <div><span>Faults opened</span><b class="num">${stats.faults}</b></div>
+      <div><span>Days on floor</span><b class="num">${stats.days} of ${selectedCalendarDays()}</b></div>
+    </div>
+    ${stats.days ? `<h4>Selected-period gap vs floor norm (${fmt$(d.floor_norm)})</h4>
+    <div class="wf">
+      ${wfCol('Floor norm', d.floor_norm, 'base', false)}
+      ${wfCol('Off-floor days', d.exposure, 'neg')}
+      ${wfCol(`Zone (${m.zone_main})`, d.zone, 'neg')}
+      ${wfCol('Game hold', d.game, d.game>0?'pos':'neg')}
+      ${wfCol('Own play draw', d.own_play, d.own_play>0?'pos':'neg')}
+      ${wfCol('Hold vs theo (luck/leak)', d.hold_luck, 'neg')}
+      ${wfCol('Actual', d.actual, 'fin', false)}
+    </div>
+    <div class="chart-note">Selected-period decomposition: apply exposure, zone, game mix, own play and realized hold in sequence. Sums to the actual result.</div>` : ''}
+    ${daily.length ? `<h4>Daily coin-in, selected period</h4>
+    <div class="chart-box" style="height:220px"><canvas id="drTrend"></canvas></div>` : ''}`;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('veil').classList.add('open');
+  if (daily.length){
+    new Chart(document.getElementById('drTrend'), {
+      type: 'line',
+      data: { labels: daily.map(r=>r.gaming_date.slice(5)),
+        datasets: [{ data: daily.map(r=>Math.round(r.coin_in_usd)), borderColor:'#d9a94e', backgroundColor:'#d9a94e1c', fill:true, tension:0.3, pointRadius:0, borderWidth:1.6 }]},
+      options: { responsive:true, maintainAspectRatio:false, animation:false,
+        plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${fmt$(c.parsed.y)} coin-in`}}},
+        scales:{ y:{grid:gridC, ticks:{callback:v=>'$'+(v/1000)+'K'}}, x:{grid:{display:false}, ticks:{maxTicksLimit:8}} } }
+    });
+  }
+}
+function wfCol(label, val, cls, showVal=true){
+  const max = 78000;
+  const h = Math.max(2, Math.min(100, Math.abs(val)/max*100));
+  return `<div class="col">
+    <div class="bar ${cls}" style="height:${h}%" title="${label}: ${fmt$(val)}">${showVal&&Math.abs(val)>2500?`<span class="num" style="color:${cls==='neg'?'#ffd9d2':cls==='pos'?'#d6f0d9':'#f0e2bd'}">${val<0?'−':''}${Math.abs(val)/1000>=1?Math.round(Math.abs(val)/1000)+'K':'$'+Math.round(Math.abs(val))}</span>`:''}</div>
+    <div class="lbl">${label}</div></div>`;
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('veil').classList.remove('open');
+}
+document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+document.getElementById('veil').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeDrawer(); });
+
+/* ---------- filters: zone chips + bank ---------- */
+function renderZoneChips(){
+  const wrap = document.getElementById('zoneChips');
+  wrap.innerHTML = '';
+  const all = document.createElement('button');
+  all.className = 'chip'; all.setAttribute('aria-pressed', zoneFilter==='ALL');
+  all.innerHTML = 'All zones'; all.onclick = () => { zoneFilter='ALL'; renderZoneChips(); renderScatter(); };
+  wrap.appendChild(all);
+  Object.keys(ZC).forEach(z => {
+    const b = document.createElement('button');
+    b.className = 'chip'; b.setAttribute('aria-pressed', zoneFilter===z);
+    b.innerHTML = `<span class="dot" style="background:${ZC[z]}"></span>${z}`;
+    b.onclick = () => { zoneFilter = zoneFilter===z ? 'ALL' : z; renderZoneChips(); renderScatter(); };
+    wrap.appendChild(b);
+  });
+}
+function renderBankSel(){
+  const sel = document.getElementById('bankSel');
+  const banks = [...new Set(DATA.all_machines.filter(m=>m.bank).map(m=>m.bank))].sort();
+  sel.innerHTML = '';
+  sel.add(new Option('All banks','ALL'));
+  banks.forEach(b => sel.add(new Option(b,b)));
+  sel.value = bankFilter;
+  sel.onchange = () => { bankFilter = sel.value; renderScatter(); };
+}
+
+/* ---------- section pages ---------- */
+const pages = [
+  {id:'home',label:'Overview'}, {id:'verdicts',label:'Verdicts'}, {id:'location',label:'Location'},
+  {id:'luck',label:'Luck'}, {id:'leak',label:'Leak'}, {id:'exposure',label:'Exposure'},
+  {id:'model',label:'Model'}, {id:'budget',label:'Budget'}, {id:'appendix',label:'Appendix'}
+];
+let currentPage = 'home';
+function renderCurrentPage(){
+  if (typeof Chart !== 'undefined') Object.values(Chart.instances).forEach(chart=>chart.destroy());
+  renderKPIs();
+  if(currentPage==='verdicts') renderTable();
+  if(currentPage==='location'){renderZoneChart();renderScatter();renderZoneChips();renderBankSel();}
+  if(currentPage==='luck') renderLuck();
+  if(currentPage==='leak') renderLeak();
+  if(currentPage==='exposure') renderExposure();
+  if(currentPage==='model') renderModel();
+}
+function showPage(id, updateHistory=false){
+  if(!pages.some(page=>page.id===id)) id='home';
+  currentPage=id;
+  document.body.classList.toggle('page-home',id==='home');
+  document.body.classList.toggle('page-section',id!=='home');
+  document.querySelectorAll('main>section').forEach(section=>section.classList.toggle('active',section.id===id));
+  document.querySelectorAll('.nav a').forEach(link=>{
+    if(link.hash==='#'+id) link.setAttribute('aria-current','page'); else link.removeAttribute('aria-current');
+  });
+  const index=pages.findIndex(page=>page.id===id);
+  const previous=pages[index-1], next=pages[index+1];
+  const previousLink=previous?`<a href="#${previous.id}">← ${previous.label}</a>`:'';
+  const nextLink=next?`<a href="#${next.id}">${next.label} →</a>`:'';
+  const controls=document.getElementById('pageControls');
+  controls.dataset.page=id;
+  controls.innerHTML=previousLink+nextLink;
+  if(updateHistory) history.pushState(null,'','#'+id);
+  window.scrollTo(0,0);
+  renderCurrentPage();
+}
+document.querySelectorAll('.nav a').forEach(link=>link.addEventListener('click',event=>{
+  event.preventDefault(); showPage(link.hash.slice(1),true);
+}));
+document.querySelector('.overview-links').addEventListener('click',event=>{
+  const link=event.target.closest('a'); if(!link) return;
+  event.preventDefault(); showPage(link.hash.slice(1),true);
+});
+document.getElementById('pageControls').addEventListener('click',event=>{
+  const link=event.target.closest('a'); if(!link) return;
+  event.preventDefault(); showPage(link.hash.slice(1),true);
+});
+window.addEventListener('popstate',()=>showPage(location.hash.slice(1)||'home'));
+function refreshAll(){renderCurrentPage();}
+showPage(location.hash.slice(1)||'home');
+const topbar=document.querySelector('.topbar');
+new ResizeObserver(()=>document.documentElement.style.setProperty('--header-height',topbar.offsetHeight+'px')).observe(topbar);
+</script>
+</body>
+</html>
